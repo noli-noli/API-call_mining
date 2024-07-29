@@ -1,0 +1,5 @@
+workspace/datasets/brazilian-malware-dataset-master/*
+workspace/datasets/li2022novel/*
+workspace/datasets/mal-ben/*
+*.npz
+*.txt

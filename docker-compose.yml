@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  mi24a001:
+    build:
+      context: ./
+      dockerfile: dockerfile
+
+      #dockerfile内で使用する変数を渡す。
+      args:
+        - http_tmp=$http_proxy
+        - https_tmp=$https_proxy
+
+    volumes:
+      - ./workspace:/workspace   #ホスト側のディレクトリをコンテナ側にマウント
+    working_dir: /workspace
+
+    #systemdを立ち上げる
+    command: /sbin/init
+
+    #環境変数読み込む。
+    env_file:
+      - .env
+
+    #ttyとprivilegedを有効化
+    privileged: true
+    tty: true
+
+    #ポートを開放
+    #ports:
+
+    #GPUを使用するための設定
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+    #core dumpを防ぐ為の設定
+    shm_size: 12GB
+    #コンテナネットワークの設定
