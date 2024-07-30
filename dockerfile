@@ -18,7 +18,7 @@ RUN apt update -y
 RUN apt install -y systemd init
 
 #pip関連 
-RUN mkdir -p /tmp
-COPY requirements.txt /tmp
-WORKDIR /tmp
-RUN pip install -r requirements.txt
+#RUN mkdir -p /tmp
+#COPY requirements.txt /tmp
+#WORKDIR /tmp
+#RUN pip install -r requirements.txt
