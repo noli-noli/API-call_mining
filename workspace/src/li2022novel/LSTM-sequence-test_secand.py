@@ -154,14 +154,23 @@ for b in range(malware_sequences.size-1900):
         print("test:",test[0:i+1].shape)
         print("data-result:",data[i].sum())
         print("test-result:",test[i].sum())
-        print(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
+
+        #各トークンの予測誤差
+        print(np.sum(rel_entr(test[i],data[i])))
+        tmp.append(np.sum(rel_entr(test[i],data[i])))
+
+        #シーケンス長の累積誤差
+        #print(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
+        #tmp.append(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
+
+        #if i==1:
+        #    break
+
+        #以下は試行錯誤の残骸
         #print(jensenshannon(data[0:i+1].flatten(),test[0:i+1].flatten())**2)
         #print(data[0:i+1])
         #print(test[0:i+1])
         #sum.append(jensenshannon(data[0:i+1].flatten(),test[0:i+1].flatten())**2)
-        tmp.append(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
-        #if i==1:
-        #    break
         #print(most_probable_token_id)
         #print(f"{i}配列目")
         #print("リザルト:",sample_data[0:i+2])
