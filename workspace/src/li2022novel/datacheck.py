@@ -54,3 +54,8 @@ plot.ylabel('sequence length')
 
 plot.savefig("cleanware_sequence.png")
 """
+
+test = np.load("cleanware.npy")
+print(test.shape)
+print(test[0])
+print(test[99])
