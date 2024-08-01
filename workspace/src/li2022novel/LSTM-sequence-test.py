@@ -104,7 +104,7 @@ DATASET_PANDAS = pd.DataFrame({
 cleanware_sequences = DATASET_PANDAS[DATASET_PANDAS["y"] == 0]["x_name"]
 malware_sequences = DATASET_PANDAS[DATASET_PANDAS["y"] == 1]["x_name"]
 #リストサイズを縮小するには、以下のコメントアウトを外す。縮小サイズは x[0:10] にて指定可能
-cleanware_sequences = cleanware_sequences[1800:2000].apply(lambda x: x[0:100])
+cleanware_sequences = cleanware_sequences[1000:2000].apply(lambda x: x[0:100])
 malware_sequences = malware_sequences.apply(lambda x: x[0:100])
 
 #print(cleanware_sequences[10])
@@ -113,18 +113,18 @@ malware_sequences = malware_sequences.apply(lambda x: x[0:100])
 
 
 embedding_model = Sequential()
-embedding_model.add(Embedding(302, 200, input_length=1000,embeddings_initializer=RandomUniform(seed=0)))
+embedding_model.add(Embedding(302, 200, input_length=100,embeddings_initializer=RandomUniform(seed=0)))
 
 
 print(cleanware_sequences.size)
 
 sum = []
 
-for b in range(malware_sequences.size-1900):
-    embedding_data = dataset_preprocess(cleanware_sequences)
-    embedding_data = embedding_model(np.array(embedding_data[b],dtype=int))
-    embedding_data_one_hot = dataset_preprocess(cleanware_sequences)
-    embedding_data_one_hot = embedding_data_one_hot[b]
+for b in range(malware_sequences.size-1999):
+    clean_data = dataset_preprocess(cleanware_sequences)
+    embedding_data = embedding_model(np.array(clean_data[b],dtype=int))
+    #embedding_data_one_hot = dataset_preprocess(cleanware_sequences)
+    #embedding_data_one_hot = embedding_data_one_hot[b]
 
 
 
@@ -142,29 +142,39 @@ for b in range(malware_sequences.size-1900):
 
 
 
-    test = to_categorical(embedding_data_one_hot,303)
+    #test = to_categorical(embedding_data_one_hot,303)
     # print(test[0])
     # print(test[1])
     # print(test[2])
 
+    roop = clean_data.size-1
+
     tmp = []
-    for i in range(embedding_data_one_hot.size):
+
+    #print(np.argmax(model.predict(embedding_data[b+1])))
+    #print(np.argmax(model.predict(embedding_data[b+1]),axis=0))
+
+
+    for i in range(roop):
         data = model.predict(embedding_data[0:i+1])
-        print("data:",data[0:i+1].shape)
-        print("test:",test[0:i+1].shape)
-        print("data-result:",data[i].sum())
-        print("test-result:",test[i].sum())
+        #data = data[0]
+        print("data:",data.shape)
+        print("cleandata",clean_data[b][i])
+        #print("test:",test.shape)
+        #print("data-result:",data[i].sum())
+        #print("test-result:",test[i].sum())
 
-        #各トークンの予測誤差
-        print(np.sum(rel_entr(test[i],data[i])))
-        tmp.append(np.sum(rel_entr(test[i],data[i])))
+        print(data[0,clean_data[b][i]])
 
-        #シーケンス長の累積誤差
+
+        #各トークンの予測誤差(間違い)
+        #print(np.sum(rel_entr(test[i+1],data[i+1])))
+        #tmp.append(np.sum(rel_entr(test[i+1],data[i+1])))
+
+        #シーケンス長の累積誤差(間違い)
         #print(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
         #tmp.append(np.sum(rel_entr(test[0:i+1],data[0:i+1])))
 
-        #if i==1:
-        #    break
 
         #以下は試行錯誤の残骸
         #print(jensenshannon(data[0:i+1].flatten(),test[0:i+1].flatten())**2)
@@ -180,5 +190,6 @@ for b in range(malware_sequences.size-1900):
         #print(np.sum(rel_entr(data,data[0,sample_data[0:i+1]])))
     sum.append(tmp)
 
-#print(sum)
-np.save("cleanware-per_token.npy",np.array(sum,dtype=int))
+
+print(np.sum(sum)/5)
+#np.save("cleanware-per_token.npy",np.array(sum,dtype=int))

@@ -131,7 +131,7 @@ new_data = dataset_preprocess(cleanware_sequences)
 
 print(new_data.max())
 
-X,y = create_dataset(new_data[0:1800],False)
+X,y = create_dataset(new_data[0:999],False)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
