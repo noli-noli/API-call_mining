@@ -2,7 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
+from sklearn.manifold import TSNE
+from keras.models import Model
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM,Dense,Embedding
@@ -13,8 +14,8 @@ from sklearn.metrics import precision_score, recall_score, f1_score,precision_re
 from tensorflow.keras.initializers import RandomUniform
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from modules import create_dataset,dataset_preprocess,sequence_padding_removal
+
 
 
 
@@ -34,7 +35,7 @@ DATASET_PANDAS = pd.DataFrame({
 
 cleanware_sequences = DATASET_PANDAS[DATASET_PANDAS["y"] == 0]["x_name"]
 #リストサイズを縮小するには、以下のコメントアウトを外す。縮小サイズは x[0:10] にて指定可能
-cleanware_sequences = cleanware_sequences.apply(lambda x: x[0:130])
+cleanware_sequences = cleanware_sequences.apply(lambda x: x[0:100])
 
 
 new_data = dataset_preprocess(cleanware_sequences)
@@ -66,49 +67,6 @@ pred = np.argmax(predicted, axis=1)  # 予測されたクラスラベルを取�
 
 
 
-# グラフのプロット
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 12), gridspec_kw={'height_ratios': [1, 1]})
-
-
-# 図全体の枠線の設定
-fig.patch.set_edgecolor('black')  # 枠線の色を黒に設定
-fig.patch.set_linewidth(3)  # 枠線の幅を1に設定
-mpl.rcParams['font.size'] = 25
-
-# 上のグラフ（ECG）
-ax1.plot(y_test, label='Actual',color='blue' , linewidth=0.5)
-ax1.plot(pred, label='Predicted',color='red', linewidth=0.5)
-ax1.set_xlabel('API call sequence')
-ax1.set_ylabel('Correct answer and predicted value')
-ax1.set_facecolor(color='#F0F0F0')
-ax1.grid()
-ax1.legend(loc='upper right')
-
-
-# 2乗誤差の計算
-mse_values = []
-for i in range(len(X_test)):
-    true_vector = np.zeros(303)
-    true_vector[y_test[i]] = 1
-    pred_vector = predicted[i]
-    mse = mean_squared_error(true_vector, pred_vector)
-    mse_values.append(mse)
-
-# 下のグラフ（Mahalanobis Distance）
-ax2.plot(range(1, len(mse_values) + 1), mse_values, color='red', linewidth=0.5)
-#ax2.axhline(y=threshold, color='red', linestyle='--', linewidth=1, label='Threshold')
-ax2.set_xlabel('API call sequence')
-ax2.set_ylabel('Mean Squared Error for API Call Predictions')
-ax2.set_facecolor(color='#F0F0F0')
-ax2.grid()
-ax2.legend(loc='upper right')
-
-plt.tight_layout()
-plt.savefig(f"二乗誤差mal_reports.png", dpi=200)
-plt.clf()
-
-
-
 # 予測結果の評価
 precision = precision_score(y_test, pred, average='weighted')
 recall = recall_score(y_test, pred, average='weighted')
@@ -118,22 +76,28 @@ print("Precision: ", precision)
 print("Recall: ", recall)
 print("F1-score: ", f1)
 
-"""
-# ROC曲線を計算
-fpr, tpr, thresholds = roc_curve(y_test, pred)
-# AUCを計算
-roc_auc = auc(fpr, tpr)
-# ROC曲線をプロット
-plt.figure(figsize=(8, 6))
-plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
-plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend(loc='lower right')
-plt.savefig(f"ROC.png",dpi=200)
-plt.clf()
-"""
 
 mse = mean_squared_error(y_test, pred)
 print("MSE: ", mse)
+
+
+
+lstm_layer = model.layers[-2]  # LSTMレイヤー（必要に応じて変更）
+_, h, c = lstm_layer.output  # 隠れ状態とセル状態
+
+# 新しいモデルを作成（入力からLSTMレイヤーの出力まで）
+internal_model = Model(inputs=model.input, outputs=[h, c])
+
+# データセットの内部状態を取得
+hidden_states = internal_model.predict(X)  # 隠れ状態とセル状態の取得
+
+# 隠れ状態をt-SNEで2次元に圧縮して可視化
+tsne = TSNE(n_components=2)
+hidden_states_2d = tsne.fit_transform(hidden_states[0])  # 隠れ状態のみ使用
+
+# 可視化
+plt.scatter(hidden_states_2d[:, 0], hidden_states_2d[:, 1])
+plt.title("t-SNE Visualization of LSTM Hidden States")
+plt.xlabel("Dimension 1")
+plt.ylabel("Dimension 2")
+plt.savefig("sample.png")

@@ -38,7 +38,7 @@ model = keras.models.load_model("100sequence.h5")
 #sample = np.array([[1,2,3,4,5,0,0,0,0,0]],dtype=int)
 
 
-new_data = dataset_preprocess(malware_sequences)
+new_data = dataset_preprocess(cleanware_sequences)
 order,X,y = create_dataset(new_data,False)
 
 predicted = model.predict(X)
@@ -60,7 +60,7 @@ for a in range(np.size(X,axis=0)):
     sum.append([order[a],predicted[a][y[a]]])
     #print("予測値(生):",np.argmax(predicted, axis=1)[a])
     #print("予測値(確率):",f"{predicted[0][17]:.8f}")
-    #print("マックス:",np.argmax(predicted,axis=0))
+    #print("マックス:",npargmax(predicted,axis=0))
     #print("---------------")
     #if a==5:
     #    break
