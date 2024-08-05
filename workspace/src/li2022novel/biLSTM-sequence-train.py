@@ -34,7 +34,7 @@ DATASET_PANDAS = pd.DataFrame({
 
 cleanware_sequences = DATASET_PANDAS[DATASET_PANDAS["y"] == 0]["x_name"]
 #リストサイズを縮小するには、以下のコメントアウトを外す。縮小サイズは x[0:10] にて指定可能
-cleanware_sequences = cleanware_sequences.apply(lambda x: x[0:100])
+cleanware_sequences = cleanware_sequences.apply(lambda x: x[0:150])
 
 
 new_data = dataset_preprocess(cleanware_sequences)
@@ -48,15 +48,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,shuffle=
 
 model = Sequential()
 model.add(Embedding(302, 200, input_length=100,embeddings_initializer=RandomUniform(seed=0)))
-model.add(Bidirectional(LSTM(200)))
+model.add(Bidirectional(LSTM(200,return_sequences=False)))
 model.add(Dense(303, activation='softmax'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam',metrics=['accuracy'])
 model.summary()
 
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=3,restore_best_weights=True)
-model.fit(X_train, y_train, batch_size=128,epochs=100, verbose=1,validation_data=(X_test, y_test),callbacks=[early_stopping])
-model.save(os.path.join("train_data","biLSTM_100sequence_128batch.h5"))
+model.fit(X_train, y_train, batch_size=16,epochs=100, verbose=1,validation_data=(X_test, y_test),callbacks=[early_stopping])
+model.save(os.path.join("train_data","biLSTM_100sequence_128batch_150sequense.h5"))
 
 
 # 予測
